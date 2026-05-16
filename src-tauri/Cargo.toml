@@ -1,0 +1,20 @@
+[package]
+name = "kimiflux"
+version = "1.0.0"
+description = "KimiFlux - A Miniflux RSS Reader"
+authors = ["you"]
+license = "MIT"
+repository = ""
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5.0", features = [] }
+
+[dependencies]
+tauri = { version = "1.5.2", features = [ "http-request", "notification-all", "shell-open", "fs-read-file", "fs-write-file", "fs-create-dir", "fs-read-dir", "fs-exists", "path-all", "system-tray"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

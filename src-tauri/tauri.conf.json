@@ -1,0 +1,73 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:5173",
+    "distDir": "../dist",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "KimiFlux",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "notification": {
+        "all": true
+      },
+      "http": {
+        "all": false,
+        "request": true
+      },
+      "fs": {
+        "all": false,
+        "readFile": true,
+        "writeFile": true,
+        "createDir": true,
+        "readDir": true,
+        "exists": true
+      },
+      "path": {
+        "all": true
+      },
+      "process": {
+        "all": false
+      },
+      "window": {
+        "all": false
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.kimiflux.app",
+      "icon": [
+        "icons/icon.ico",
+        "icons/icon.png",
+        "icons/icon.icns"
+      ]
+    },
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src http:// https://;"
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 900,
+        "resizable": true,
+        "title": "KimiFlux - Miniflux RSS Reader",
+        "width": 1400,
+        "minWidth": 900,
+        "minHeight": 600
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.png"
+    }
+  }
+}
