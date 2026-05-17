@@ -952,6 +952,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fluxpane"
+version = "1.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1892,16 +1902,6 @@ dependencies = [
  "fluent-uri",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "kimiflux"
-version = "1.0.0"
-dependencies = [
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
 ]
 
 [[package]]

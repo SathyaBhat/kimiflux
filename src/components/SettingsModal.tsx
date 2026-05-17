@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fetch as tauriFetch, ResponseType } from '@tauri-apps/api/http';
 
 interface Props {
   onSave: (url: string, key: string) => void;
@@ -7,35 +8,77 @@ interface Props {
   initialKey?: string;
 }
 
+// Check if running in Tauri environment
+const isTauri = () => {
+  return typeof window !== 'undefined' && (window as unknown as { __TAURI__: unknown }).__TAURI__ !== undefined;
+};
+
 export default function SettingsModal({ onSave, onClose, initialUrl, initialKey }: Props) {
   const [url, setUrl] = useState(initialUrl || '');
   const [key, setKey] = useState(initialKey || '');
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState('');
 
+  const testConnection = async (testUrl: string, testKey: string): Promise<{ success: boolean; error?: string }> => {
+    const apiUrl = `${testUrl}/v1/me`;
+
+    if (isTauri()) {
+      // Use Tauri HTTP API
+      try {
+        const response = await tauriFetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'X-Auth-Token': testKey,
+            'Content-Type': 'application/json',
+          },
+          responseType: ResponseType.JSON,
+        });
+
+        if (response.status >= 200 && response.status < 300) {
+          return { success: true };
+        } else if (response.status === 401) {
+          return { success: false, error: 'Invalid API key. Please check your credentials.' };
+        } else {
+          return { success: false, error: `Connection failed: ${response.status}` };
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        return { success: false, error: `Failed to connect: ${errorMsg}` };
+      }
+    } else {
+      // Use browser fetch
+      try {
+        const response = await fetch(apiUrl, {
+          headers: { 'X-Auth-Token': testKey },
+        });
+
+        if (response.ok) {
+          return { success: true };
+        } else if (response.status === 401) {
+          return { success: false, error: 'Invalid API key. Please check your credentials.' };
+        } else {
+          return { success: false, error: `Connection failed: ${response.statusText}` };
+        }
+      } catch (err) {
+        return { success: false, error: 'Failed to connect. Please check the URL and make sure Miniflux is accessible.' };
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTesting(true);
     setError('');
 
-    try {
-      // Test the connection by making a simple API call
-      const response = await fetch(`${url}/v1/me`, {
-        headers: { 'X-Auth-Token': key },
-      });
+    const result = await testConnection(url, key);
 
-      if (response.ok) {
-        onSave(url, key);
-      } else if (response.status === 401) {
-        setError('Invalid API key. Please check your credentials.');
-      } else {
-        setError(`Connection failed: ${response.statusText}`);
-      }
-    } catch {
-      setError('Failed to connect. Please check the URL and make sure Miniflux is accessible.');
-    } finally {
-      setTesting(false);
+    if (result.success) {
+      onSave(url, key);
+    } else {
+      setError(result.error || 'Failed to connect. Please check the URL and make sure Miniflux is accessible.');
     }
+
+    setTesting(false);
   };
 
   return (

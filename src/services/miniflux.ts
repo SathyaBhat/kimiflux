@@ -1,21 +1,111 @@
-import axios, { AxiosInstance } from 'axios';
+import { fetch as tauriFetch, ResponseType, Body } from '@tauri-apps/api/http';
 import type { Feed, Category, Entry, EntriesResponse, User, MinifluxConfig, FeedCounters } from '../types/miniflux';
 
+// Check if running in Tauri environment
+const isTauri = () => {
+  return typeof window !== 'undefined' && (window as unknown as { __TAURI__: unknown }).__TAURI__ !== undefined;
+};
+
 class MinifluxClient {
-  private client: AxiosInstance | null = null;
-  private _config: MinifluxConfig | null = null;
+  private _baseUrl: string = '';
+  private _headers: Record<string, string> = {};
 
   init(newConfig: MinifluxConfig) {
-    // Store config for potential future use
-    void this._config;
-    this._config = newConfig;
-    this.client = axios.create({
-      baseURL: newConfig.baseUrl + '/v1',
-      headers: {
-        'X-Auth-Token': newConfig.apiKey,
-        'Content-Type': 'application/json',
-      },
-    });
+    this._baseUrl = newConfig.baseUrl + '/v1';
+    this._headers = {
+      'X-Auth-Token': newConfig.apiKey,
+      'Content-Type': 'application/json',
+    };
+  }
+
+  private async get<T>(endpoint: string): Promise<T> {
+    if (isTauri()) {
+      const response = await tauriFetch(`${this._baseUrl}${endpoint}`, {
+        method: 'GET',
+        headers: this._headers,
+        responseType: ResponseType.JSON,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return response.data as T;
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.data}`);
+      }
+    } else {
+      const response = await fetch(`${this._baseUrl}${endpoint}`, {
+        headers: this._headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response.json() as Promise<T>;
+    }
+  }
+
+  private async put<T>(endpoint: string, body?: Record<string, unknown>): Promise<T> {
+    if (isTauri()) {
+      const response = await tauriFetch(`${this._baseUrl}${endpoint}`, {
+        method: 'PUT',
+        headers: this._headers,
+        body: body ? Body.json(body) : undefined,
+        responseType: ResponseType.JSON,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return response.data as T;
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.data}`);
+      }
+    } else {
+      const response = await fetch(`${this._baseUrl}${endpoint}`, {
+        method: 'PUT',
+        headers: this._headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response.json() as Promise<T>;
+    }
+  }
+
+  private async requestWithParams<T>(endpoint: string, params: Record<string, string | number | boolean>): Promise<T> {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined) {
+        searchParams.append(key, String(value));
+      }
+    }
+
+    const url = `${this._baseUrl}${endpoint}?${searchParams.toString()}`;
+
+    if (isTauri()) {
+      const response = await tauriFetch(url, {
+        method: 'GET',
+        headers: this._headers,
+        responseType: ResponseType.JSON,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return response.data as T;
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.data}`);
+      }
+    } else {
+      const response = await fetch(url, {
+        headers: this._headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response.json() as Promise<T>;
+    }
   }
 
   async testConnection(): Promise<boolean> {
@@ -28,18 +118,15 @@ class MinifluxClient {
   }
 
   async getUser(): Promise<User> {
-    const response = await this.client!.get('/me');
-    return response.data;
+    return this.get('/me');
   }
 
   async getFeeds(): Promise<Feed[]> {
-    const response = await this.client!.get('/feeds');
-    return response.data;
+    return this.get('/feeds');
   }
 
   async getCategories(): Promise<Category[]> {
-    const response = await this.client!.get('/categories');
-    return response.data;
+    return this.get('/categories');
   }
 
   async getEntries(
@@ -65,42 +152,38 @@ class MinifluxClient {
       params.feed_id = feedId;
     }
 
-    const response = await this.client!.get('/entries', { params });
-    return response.data;
+    return this.requestWithParams('/entries', params);
   }
 
   async getEntry(entryId: number): Promise<Entry> {
-    const response = await this.client!.get(`/entries/${entryId}`);
-    return response.data;
+    return this.get(`/entries/${entryId}`);
   }
 
   async updateEntries(entryIds: number[], status: 'read' | 'unread'): Promise<void> {
-    await this.client!.put('/entries', {
+    return this.put('/entries', {
       entry_ids: entryIds,
       status,
     });
   }
 
   async toggleBookmark(entryId: number): Promise<void> {
-    await this.client!.put(`/entries/${entryId}/bookmark`);
+    return this.put(`/entries/${entryId}/bookmark`);
   }
 
   async markCategoryAsRead(categoryId: number): Promise<void> {
-    await this.client!.put(`/categories/${categoryId}/mark-all-as-read`);
+    return this.put(`/categories/${categoryId}/mark-all-as-read`);
   }
 
   async markFeedAsRead(feedId: number): Promise<void> {
-    await this.client!.put(`/feeds/${feedId}/mark-all-as-read`);
+    return this.put(`/feeds/${feedId}/mark-all-as-read`);
   }
 
   async getFeedCounters(): Promise<FeedCounters> {
-    const response = await this.client!.get('/feeds/counters');
-    return response.data;
+    return this.get('/feeds/counters');
   }
 
   async fetchEntryContent(entryId: number): Promise<{ content: string }> {
-    const response = await this.client!.get(`/entries/${entryId}/fetch-content`);
-    return response.data;
+    return this.get(`/entries/${entryId}/fetch-content`);
   }
 }
 

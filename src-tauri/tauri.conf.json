@@ -7,7 +7,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "KimiFlux",
+    "productName": "FluxPane",
     "version": "1.0.0"
   },
   "tauri": {
@@ -21,8 +21,8 @@
         "all": true
       },
       "http": {
-        "all": false,
-        "request": true
+        "all": true,
+        "scope": ["http://**", "https://**"]
       },
       "fs": {
         "all": false,
@@ -45,7 +45,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.kimiflux.app",
+      "identifier": "com.fluxpane.app",
       "icon": [
         "icons/icon.ico",
         "icons/icon.png",
@@ -53,14 +53,14 @@
       ]
     },
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src http:// https://;"
+      "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src *;"
     },
     "windows": [
       {
         "fullscreen": false,
         "height": 900,
         "resizable": true,
-        "title": "KimiFlux - Miniflux RSS Reader",
+        "title": "FluxPane - Miniflux RSS Reader",
         "width": 1400,
         "minWidth": 900,
         "minHeight": 600

@@ -1,155 +1,115 @@
-// Catppuccin Theme Definitions
-// https://github.com/catppuccin/catppuccin
+// Catppuccin Theme Definitions - From https://github.com/catppuccin/freshrss
+// These colors are mapped from the official FreshRSS Catppuccin themes
 
 export type ThemeFlavor = 'latte' | 'frappe' | 'macchiato' | 'mocha' | 'system';
 
 export interface ThemeColors {
   name: string;
-  bgPrimary: string;
-  bgSecondary: string;
-  bgTertiary: string;
-  accent: string;
-  textPrimary: string;
-  textSecondary: string;
+  // Core backgrounds
+  bgPrimary: string;    // --bg (main background)
+  bgSecondary: string;  // --accent-bg (sidebar/nav)
+  bgTertiary: string;   // --border/crust (elevated surfaces)
+  // Text colors
+  textPrimary: string;  // --text
+  textSecondary: string; // --text-light
+  // Accents
+  accent: string;       // --accent
+  accentLight: string; // --accent-light
+  // Borders
   border: string;
+  // Supporting
+  code: string;
+  codeBg: string;
+  alert: string;
+  alertBg: string;
+  hover: string;
   surface0: string;
   surface1: string;
   surface2: string;
-  overlay0: string;
-  overlay1: string;
-  overlay2: string;
-  blue: string;
-  lavender: string;
-  sapphire: string;
-  green: string;
-  yellow: string;
-  peach: string;
-  maroon: string;
-  red: string;
-  pink: string;
-  mauve: string;
-  flamingo: string;
-  rosewater: string;
 }
 
 // 🌻 Latte (Light)
 export const latte: ThemeColors = {
   name: 'Catppuccin Latte',
-  bgPrimary: '#eff1f5',      // base
-  bgSecondary: '#e6e9ef',    // mantle
-  bgTertiary: '#dce0e8',     // crust
-  accent: '#8839ef',         // mauve
-  textPrimary: '#4c4f69',    // text
-  textSecondary: '#6c6f85',  // subtext0
-  border: '#ccd0da',         // surface0
+  bgPrimary: '#eff1f5',        // base
+  bgSecondary: '#e6e9ef',      // mantle/accent-bg
+  bgTertiary: '#ccd0da',       // surface0
+  textPrimary: '#4c4f69',     // text
+  textSecondary: '#5c5f77',   // subtext1
+  accent: '#8839ef',            // mauve - brighter for light theme
+  accentLight: '#d20f39',     // red
+  border: '#ccd0da',          // surface0
+  code: '#fe640b',            // peach
+  codeBg: '#e6e9ef',          // mantle
+  alert: '#40a02b',           // green
+  alertBg: '#209fb5',         // sapphire
+  hover: '#acb0be',           // surface2
   surface0: '#ccd0da',
   surface1: '#bcc0cc',
   surface2: '#acb0be',
-  overlay0: '#9ca0b0',
-  overlay1: '#8c8fa1',
-  overlay2: '#7c7f93',
-  blue: '#1e66f5',
-  lavender: '#7287fd',
-  sapphire: '#209fb5',
-  green: '#40a02b',
-  yellow: '#df8e1d',
-  peach: '#fe640b',
-  maroon: '#e64553',
-  red: '#d20f39',
-  pink: '#ea76cb',
-  mauve: '#8839ef',
-  flamingo: '#dd7878',
-  rosewater: '#dc8a78',
 };
 
 // 🪴 Frappé (Dark)
 export const frappe: ThemeColors = {
   name: 'Catppuccin Frappé',
   bgPrimary: '#303446',      // base
-  bgSecondary: '#292c3c',    // mantle
+  bgSecondary: '#292c3c',      // mantle
   bgTertiary: '#232634',     // crust
-  accent: '#ca9ee6',         // mauve
   textPrimary: '#c6d0f5',    // text
-  textSecondary: '#a5adce',  // subtext0
-  border: '#414559',         // surface0
+  textSecondary: '#a5adce',   // subtext0
+  accent: '#ca9ee6',          // mauve
+  accentLight: '#e78284',     // red
+  border: '#414559',          // surface0
+  code: '#ef9f76',            // peach
+  codeBg: '#414559',          // surface0
+  alert: '#a6d189',           // green
+  alertBg: '#85c1dc',         // sapphire
+  hover: '#626880',           // surface2
   surface0: '#414559',
   surface1: '#51576d',
   surface2: '#626880',
-  overlay0: '#737994',
-  overlay1: '#838ba7',
-  overlay2: '#949cbb',
-  blue: '#8caaee',
-  lavender: '#babbf1',
-  sapphire: '#85c1dc',
-  green: '#a6d189',
-  yellow: '#e5c890',
-  peach: '#ef9f76',
-  maroon: '#ea999c',
-  red: '#e78284',
-  pink: '#f4b8e4',
-  mauve: '#ca9ee6',
-  flamingo: '#eebebe',
-  rosewater: '#f2d5cf',
 };
 
 // 🌺 Macchiato (Dark)
 export const macchiato: ThemeColors = {
   name: 'Catppuccin Macchiato',
-  bgPrimary: '#24273a',      // base
-  bgSecondary: '#1e2030',    // mantle
-  bgTertiary: '#181926',     // crust
-  accent: '#c6a0f6',         // mauve
-  textPrimary: '#cad3f5',    // text
-  textSecondary: '#a5adcb',  // subtext0
-  border: '#363a4f',         // surface0
+  bgPrimary: '#24273a',        // base
+  bgSecondary: '#1e2030',      // mantle
+  bgTertiary: '#181926',       // crust
+  textPrimary: '#cad3f5',     // text
+  textSecondary: '#a5adcb',   // subtext0
+  accent: '#c6a0f6',          // mauve
+  accentLight: '#ed8796',     // red
+  border: '#363a4f',          // surface0
+  code: '#f5a97f',            // peach
+  codeBg: '#363a4f',          // surface0
+  alert: '#a6da95',           // green
+  alertBg: '#7dc4e4',         // sapphire
+  hover: '#5b6078',           // surface2
   surface0: '#363a4f',
   surface1: '#494d64',
   surface2: '#5b6078',
-  overlay0: '#6e738d',
-  overlay1: '#8087a2',
-  overlay2: '#939ab7',
-  blue: '#8aadf4',
-  lavender: '#b7bdf8',
-  sapphire: '#7dc4e4',
-  green: '#a6da95',
-  yellow: '#eed49f',
-  peach: '#f5a97f',
-  maroon: '#ee99a0',
-  red: '#ed8796',
-  pink: '#f5bde6',
-  mauve: '#c6a0f6',
-  flamingo: '#f0c6c6',
-  rosewater: '#f4dbd6',
 };
 
 // 🌿 Mocha (Dark)
 export const mocha: ThemeColors = {
   name: 'Catppuccin Mocha',
-  bgPrimary: '#1e1e2e',      // base
-  bgSecondary: '#181825',      // mantle
-  bgTertiary: '#11111b',       // crust
-  accent: '#cba6f7',           // mauve
-  textPrimary: '#cdd6f4',      // text
-  textSecondary: '#a6adc8',      // subtext0
-  border: '#313244',           // surface0
+  bgPrimary: '#1e1e2e',       // base
+  bgSecondary: '#181825',       // mantle
+  bgTertiary: '#11111b',        // crust
+  textPrimary: '#cdd6f4',     // text
+  textSecondary: '#a6adc8',   // subtext0
+  accent: '#cba6f7',            // mauve
+  accentLight: '#f38ba8',     // red
+  border: '#313244',            // surface0
+  code: '#fab387',              // peach
+  codeBg: '#313244',            // surface0
+  alert: '#a6e3a1',             // green
+  alertBg: '#74c7ec',           // sapphire
+  hover: '#585b70',             // surface1
   surface0: '#313244',
   surface1: '#45475a',
   surface2: '#585b70',
-  overlay0: '#6c7086',
-  overlay1: '#7f849c',
-  overlay2: '#9399b7',
-  blue: '#89b4fa',
-  lavender: '#b4befe',
-  sapphire: '#74c7ec',
-  green: '#a6e3a1',
-  yellow: '#f9e2af',
-  peach: '#fab387',
-  maroon: '#eba0ac',
-  red: '#f38ba8',
-  pink: '#f5c2e7',
-  mauve: '#cba6f7',
-  flamingo: '#f2cdcd',
-  rosewater: '#f5e0dc',
 };
 
 export const themes: Record<Exclude<ThemeFlavor, 'system'>, ThemeColors> = {
@@ -180,7 +140,7 @@ export const getDefaultThemeFlavor = (): ThemeFlavor => {
     return 'system';
   }
   
-  const saved = localStorage.getItem('kimiflux-theme');
+  const saved = localStorage.getItem('fluxpane-theme');
   if (saved && (saved === 'latte' || saved === 'frappe' || saved === 'macchiato' || saved === 'mocha' || saved === 'system')) {
     return saved as ThemeFlavor;
   }
@@ -189,37 +149,37 @@ export const getDefaultThemeFlavor = (): ThemeFlavor => {
 };
 
 export const saveThemeFlavor = (flavor: ThemeFlavor) => {
-  localStorage.setItem('kimiflux-theme', flavor);
+  localStorage.setItem('fluxpane-theme', flavor);
 };
 
 export const applyTheme = (theme: ThemeColors) => {
   const root = document.documentElement;
   
+  // Core backgrounds
   root.style.setProperty('--bg-primary', theme.bgPrimary);
   root.style.setProperty('--bg-secondary', theme.bgSecondary);
   root.style.setProperty('--bg-tertiary', theme.bgTertiary);
-  root.style.setProperty('--accent', theme.accent);
+  
+  // Text colors
   root.style.setProperty('--text-primary', theme.textPrimary);
   root.style.setProperty('--text-secondary', theme.textSecondary);
+  
+  // Accents
+  root.style.setProperty('--accent', theme.accent);
+  root.style.setProperty('--accent-light', theme.accentLight);
+  
+  // Border
   root.style.setProperty('--border', theme.border);
+  
+  // Supporting
+  root.style.setProperty('--code', theme.code);
+  root.style.setProperty('--code-bg', theme.codeBg);
+  root.style.setProperty('--alert', theme.alert);
+  root.style.setProperty('--alert-bg', theme.alertBg);
+  root.style.setProperty('--hover', theme.hover);
   root.style.setProperty('--surface0', theme.surface0);
   root.style.setProperty('--surface1', theme.surface1);
   root.style.setProperty('--surface2', theme.surface2);
-  root.style.setProperty('--overlay0', theme.overlay0);
-  root.style.setProperty('--overlay1', theme.overlay1);
-  root.style.setProperty('--overlay2', theme.overlay2);
-  root.style.setProperty('--blue', theme.blue);
-  root.style.setProperty('--lavender', theme.lavender);
-  root.style.setProperty('--sapphire', theme.sapphire);
-  root.style.setProperty('--green', theme.green);
-  root.style.setProperty('--yellow', theme.yellow);
-  root.style.setProperty('--peach', theme.peach);
-  root.style.setProperty('--maroon', theme.maroon);
-  root.style.setProperty('--red', theme.red);
-  root.style.setProperty('--pink', theme.pink);
-  root.style.setProperty('--mauve', theme.mauve);
-  root.style.setProperty('--flamingo', theme.flamingo);
-  root.style.setProperty('--rosewater', theme.rosewater);
 };
 
 export const themeOptions: { value: ThemeFlavor; label: string; description: string; isDark: boolean | null }[] = [

@@ -1,6 +1,9 @@
+import { useState } from 'react';
+import { useFavicon } from '../hooks/useFavicon';
+
 interface CategoryGroup {
   category: { id: number; title: string };
-  feeds: { id: number; title: string; category: { id: number } }[];
+  feeds: { id: number; title: string; category: { id: number }; site_url: string }[];
 }
 
 interface Props {
@@ -13,6 +16,24 @@ interface Props {
   selectedFeedId: number | null;
   showUnreadOnly: boolean;
   onToggleUnreadOnly: () => void;
+}
+
+function FeedIcon({ siteUrl, title }: { siteUrl: string; title: string }) {
+  const { faviconUrl } = useFavicon(siteUrl);
+  const [error, setError] = useState(false);
+
+  if (faviconUrl && !error) {
+    return (
+      <img
+        src={faviconUrl}
+        alt=""
+        className="feed-favicon"
+        onError={() => setError(true)}
+      />
+    );
+  }
+
+  return <span className="feed-favicon-fallback">{title.charAt(0).toUpperCase()}</span>;
 }
 
 export default function Sidebar({ 
@@ -39,7 +60,7 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h1>🗞️ KimiFlux</h1>
+        <h1>🗞️ FluxPane</h1>
         <div className="feed-item active" onClick={() => onFeedSelect(null, 'All Unread')}>
           <span className="feed-icon">📥</span>
           <span className="feed-name">All Unread</span>
@@ -69,8 +90,8 @@ export default function Sidebar({
                 className={`feed-item ${selectedFeedId === feed.id ? 'active' : ''} ${unreadCounts[feed.id] > 0 ? 'unread' : ''}`}
                 onClick={() => onFeedSelect(feed.id, feed.title)}
               >
-                <span className="feed-icon">
-                  {feed.title.charAt(0).toUpperCase()}
+                <span className="feed-icon-wrapper">
+                  <FeedIcon siteUrl={feed.site_url} title={feed.title} />
                 </span>
                 <span className="feed-name">{feed.title}</span>
                 <span className="feed-count">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Feed, Category, Entry, FeedCounters } from './types/miniflux';
 import { miniflux } from './services/miniflux';
+import { faviconService } from './services/favicon';
 import { useTheme } from './hooks/useTheme';
 import { ThemeSettingsInline } from './components/ThemeSettings';
 import SettingsModal from './components/SettingsModal';
@@ -27,7 +28,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [totalEntries, setTotalEntries] = useState(0);
   const [activeFeedTitle, setActiveFeedTitle] = useState('All Unread');
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(() => {
+    return localStorage.getItem('fluxpane-show-unread-only') === 'true';
+  });
   const [showAllPosts, setShowAllPosts] = useState(false);
 
   // Apply the theme colors to CSS variables on mount
@@ -38,7 +41,7 @@ function App() {
 
   // Load config from localStorage on mount
   useEffect(() => {
-    const savedConfig = localStorage.getItem('kimiflux-config');
+    const savedConfig = localStorage.getItem('fluxpane-config');
     if (savedConfig) {
       try {
         const parsed = JSON.parse(savedConfig);
@@ -69,6 +72,14 @@ function App() {
     }
   }, [config]);
 
+  // Preload favicons when feeds change
+  useEffect(() => {
+    if (feeds.length > 0) {
+      const siteUrls = feeds.map(f => f.site_url).filter(Boolean);
+      faviconService.preloadFavicons(siteUrls).catch(console.error);
+    }
+  }, [feeds]);
+
   // Load entries with optional status filter
   const loadEntries = useCallback(async (feedId?: number, status?: 'read' | 'unread') => {
     if (!config) return;
@@ -94,7 +105,7 @@ function App() {
 
   const handleSaveConfig = (url: string, key: string) => {
     const newConfig = { baseUrl: url, apiKey: key };
-    localStorage.setItem('kimiflux-config', JSON.stringify(newConfig));
+    localStorage.setItem('fluxpane-config', JSON.stringify(newConfig));
     setConfig(newConfig);
     miniflux.init(newConfig);
     setShowSettings(false);
@@ -148,7 +159,11 @@ function App() {
 
   // Toggle to show unread feeds only in sidebar
   const handleToggleUnreadOnly = () => {
-    setShowUnreadOnly(prev => !prev);
+    setShowUnreadOnly(prev => {
+      const newValue = !prev;
+      localStorage.setItem('fluxpane-show-unread-only', String(newValue));
+      return newValue;
+    });
   };
 
   // Toggle to show all posts vs unread only
@@ -163,7 +178,12 @@ function App() {
   };
   const feedsByCategory = categories.map(cat => ({
     category: cat,
-    feeds: feeds.filter(f => f.category.id === cat.id),
+    feeds: feeds.filter(f => f.category.id === cat.id).map(f => ({
+      id: f.id,
+      title: f.title,
+      category: f.category,
+      site_url: f.site_url,
+    })),
   }));
 
   // Use feed counters from API for unread counts

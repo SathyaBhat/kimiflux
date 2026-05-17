@@ -15,7 +15,7 @@ function ThemeSettingsContent({ onClose }: ThemeSettingsProps) {
   return (
     <div className="theme-settings">
       <div className="theme-settings-header">
-        <h3>🎨 Theme Settings</h3>
+        <h3>Theme Settings</h3>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '5px' }}>
           Choose your preferred color scheme
         </p>
@@ -46,7 +46,7 @@ function ThemeSettingsContent({ onClose }: ThemeSettingsProps) {
         
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <div 
-            title="Background Primary"
+            title="Background"
             style={{
               width: '30px',
               height: '30px',
@@ -56,7 +56,7 @@ function ThemeSettingsContent({ onClose }: ThemeSettingsProps) {
             }} 
           />
           <div 
-            title="Background Secondary"
+            title="Secondary"
             style={{
               width: '30px',
               height: '30px',
@@ -75,39 +75,31 @@ function ThemeSettingsContent({ onClose }: ThemeSettingsProps) {
             }} 
           />
           <div 
-            title="Blue"
+            title="Text"
             style={{
               width: '30px',
               height: '30px',
               borderRadius: '6px',
-              background: theme.blue,
+              background: theme.textPrimary,
+              border: '1px solid var(--border)',
             }} 
           />
           <div 
-            title="Green"
+            title="Hover"
             style={{
               width: '30px',
               height: '30px',
               borderRadius: '6px',
-              background: theme.green,
+              background: theme.hover,
             }} 
           />
           <div 
-            title="Red"
+            title="Accent Light"
             style={{
               width: '30px',
               height: '30px',
               borderRadius: '6px',
-              background: theme.red,
-            }} 
-          />
-          <div 
-            title="Yellow"
-            style={{
-              width: '30px',
-              height: '30px',
-              borderRadius: '6px',
-              background: theme.yellow,
+              background: theme.accentLight,
             }} 
           />
         </div>
