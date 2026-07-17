@@ -7,6 +7,7 @@ interface Props {
   loading: boolean;
   title: string;
   count: number;
+  selectedEntryId?: number | null;
   onEntrySelect: (entry: Entry) => void;
   onRefresh: () => void;
   onMarkAllRead: (entryIds: number[]) => void;
@@ -107,6 +108,7 @@ export default function ArticleList({
   loading,
   title,
   count,
+  selectedEntryId,
   onEntrySelect,
   onRefresh,
   onMarkAllRead,
@@ -121,6 +123,7 @@ export default function ArticleList({
   const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
   const [statusOpen, setStatusOpen] = useState(false);
   const [authorOpen, setAuthorOpen] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState<Set<number>>(new Set());
 
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
   const statusRef = useRef<HTMLDivElement | null>(null);
@@ -160,18 +163,27 @@ export default function ArticleList({
       .map(([name, count]) => ({ name, count }));
   }, [entries]);
 
-  // Reset author selection when entries change (feed switch)
+  // Reset author filter and pinned entries on feed/category switch
   useEffect(() => {
     setSelectedAuthors([]);
-  }, [entries]);
+    setPinnedIds(new Set());
+  }, [title]);
+
+  // Unpin when article is closed
+  useEffect(() => {
+    if (selectedEntryId == null) {
+      setPinnedIds(new Set());
+    }
+  }, [selectedEntryId]);
 
   const visibleEntries = useMemo(() => {
     let result = entries;
 
-    // Client-side status filter (handles multi-select combos the API can't express)
+    // Client-side status filter — pinned entries (opened this session) always pass through
     const isAll = selectedStatuses.includes('all') || selectedStatuses.length === 0;
     if (!isAll) {
       result = result.filter(e => {
+        if (pinnedIds.has(e.id)) return true;
         if (selectedStatuses.includes('starred') && e.starred) return true;
         if (selectedStatuses.includes('unread') && e.status === 'unread') return true;
         if (selectedStatuses.includes('read') && e.status === 'read') return true;
@@ -180,18 +192,19 @@ export default function ArticleList({
     }
 
     if (selectedAuthors.length > 0) {
-      result = result.filter(e => e.author && selectedAuthors.includes(e.author));
+      result = result.filter(e => pinnedIds.has(e.id) || (e.author != null && selectedAuthors.includes(e.author)));
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(e =>
+        pinnedIds.has(e.id) ||
         e.title.toLowerCase().includes(q) ||
         e.feed.title.toLowerCase().includes(q) ||
         stripHtml(e.content || '').toLowerCase().includes(q)
       );
     }
     return result;
-  }, [entries, selectedStatuses, selectedAuthors, searchQuery]);
+  }, [entries, selectedStatuses, selectedAuthors, searchQuery, pinnedIds]);
 
   const unreadVisible = visibleEntries.filter(e => e.status === 'unread');
 
@@ -211,6 +224,11 @@ export default function ArticleList({
     setSelectedAuthors(prev =>
       prev.includes(author) ? prev.filter(a => a !== author) : [...prev, author]
     );
+  };
+
+  const handleEntryClick = (entry: Entry) => {
+    setPinnedIds(prev => new Set(prev).add(entry.id));
+    onEntrySelect(entry);
   };
 
   const handleContextMenu = (e: React.MouseEvent, entry: Entry) => {
@@ -339,7 +357,7 @@ export default function ArticleList({
           <article
             key={entry.id}
             className={`article-card ${entry.status === 'read' ? 'read' : ''}`}
-            onClick={() => onEntrySelect(entry)}
+            onClick={() => handleEntryClick(entry)}
             onContextMenu={(e) => handleContextMenu(e, entry)}
           >
             <div className="article-header">

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - "Mark All Read" previously did nothing when viewing "All Unread" (no feed selected); now correctly marks all visible unread entries
+- Author filter resetting when clicking an article (was incorrectly tied to entries changing rather than feed switching)
+- Articles disappearing from the list immediately when opened and marked read — articles now stay pinned in the list until the article pane is closed or the feed/category is switched
 
 - Auto-refresh feed counters on window focus and every 5 minutes
 - Collapsible categories in sidebar with persisted collapse state

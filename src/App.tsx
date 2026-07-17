@@ -289,6 +289,7 @@ function App() {
         loading={loading}
         title={activeFeedTitle}
         count={totalEntries}
+        selectedEntryId={selectedEntry?.id}
         onEntrySelect={handleEntrySelect}
         onRefresh={handleRefresh}
         onMarkAllRead={handleMarkAllRead}
