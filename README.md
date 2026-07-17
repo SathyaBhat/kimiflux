@@ -1,16 +1,18 @@
-# KimiFlux
+# FluxPane
 
 A Windows desktop RSS reader powered by Miniflux API, built with Tauri + React.
 
 ## Features
 
 - 📰 Sync with Miniflux RSS server
-- 🎯 View unread articles by feed or category
+- 🎯 Filter articles by status (Unread / Read / Starred / All)
+- ✍️ Filter by author with per-author article counts
+- 📂 View articles by feed or category
 - 📖 Clean reading experience with article view
 - ⭐ Star articles for later
 - 🌐 Fetch full article content
-- 🔔 Native Windows notifications
 - 🖥️ System tray integration
+- 🎨 Catppuccin theme system (Latte, Frappé, Macchiato, Mocha)
 
 ## Prerequisites
 
@@ -44,23 +46,30 @@ Your credentials are stored locally in your browser's localStorage.
 
 - **Tauri** - Rust-based desktop framework
 - **React + TypeScript** - Frontend
-- **Axios** - HTTP client for Miniflux API
+- **Tauri HTTP API** - HTTP client for Miniflux API
 
 ## Project Structure
 
 ```
-kimiflux/
+fluxpane/
 ├── src/
 │   ├── components/
-│   │   ├── ArticleList.tsx    # Article list view
-│   │   ├── ArticleView.tsx     # Individual article reader
-│   │   ├── SettingsModal.tsx   # Config dialog
-│   │   └── Sidebar.tsx          # Feed navigation
+│   │   ├── ArticleList.tsx    # Article list with filter bar
+│   │   ├── ArticleView.tsx    # Individual article reader
+│   │   ├── SettingsModal.tsx  # Config dialog
+│   │   ├── Sidebar.tsx        # Feed/category navigation
+│   │   └── ThemeSettings.tsx  # Theme picker
+│   ├── hooks/
+│   │   ├── useFavicon.tsx     # Favicon fetching/caching
+│   │   └── useTheme.tsx       # Theme context
 │   ├── services/
-│   │   └── miniflux.ts         # Miniflux API client
+│   │   ├── favicon.ts         # Favicon service
+│   │   └── miniflux.ts        # Miniflux API client
+│   ├── themes/
+│   │   └── catppuccin.ts      # Theme definitions
 │   ├── types/
-│   │   └── miniflux.ts         # TypeScript types
-│   ├── App.tsx                 # Main app component
+│   │   └── miniflux.ts        # TypeScript types
+│   ├── App.tsx                # Main app component
 │   ├── main.tsx               # Entry point
 │   └── styles.css             # App styles
 ├── src-tauri/                 # Rust backend
