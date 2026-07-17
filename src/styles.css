@@ -114,6 +114,22 @@ body {
   color: var(--text-secondary);
   padding: 5px 10px;
   letter-spacing: 1px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.category-title:hover {
+  color: var(--text-primary);
+}
+
+.category-chevron {
+  font-size: 0.6rem;
+  opacity: 0.7;
 }
 
 .feed-item {
@@ -455,6 +471,7 @@ body {
   height: auto;
   border-radius: 8px;
   margin: 20px 0;
+  display: block;
 }
 
 .article-view-body a {
@@ -463,6 +480,103 @@ body {
 
 .article-view-body p {
   margin-bottom: 15px;
+}
+
+.article-view-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: var(--bg-tertiary);
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
+
+.article-view-body blockquote p {
+  margin-bottom: 0;
+}
+
+.article-view-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.article-view-body h2,
+.article-view-body h3,
+.article-view-body h4 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.article-view-body ul,
+.article-view-body ol {
+  margin-left: 25px;
+  margin-bottom: 15px;
+}
+
+.article-view-body li {
+  margin-bottom: 8px;
+}
+
+.article-view-body code {
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.article-view-body pre {
+  background: var(--bg-secondary);
+  padding: 15px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 15px 0;
+}
+
+.article-view-body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: fadeIn 0.1s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.context-menu-item:hover {
+  background: var(--bg-tertiary);
 }
 
 /* Loading */

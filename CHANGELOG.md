@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Auto-refresh feed counters on window focus and every 5 minutes
+- Collapsible categories in sidebar with persisted collapse state
 - Catppuccin theme system with 4 flavors + system default
   - Created `src/themes/catppuccin.ts` with Latte, Frappé, Macchiato, and Mocha color palettes
   - Created `src/hooks/useTheme.tsx` - React context for theme management with system preference detection

@@ -103,6 +103,25 @@ function App() {
     }
   }, [config, loadFeeds, loadEntries]);
 
+  // Refresh counters/feeds on visibility change and every 5 minutes
+  useEffect(() => {
+    if (!config) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadFeeds();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    const pollId = setInterval(loadFeeds, 5 * 60 * 1000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(pollId);
+    };
+  }, [config, loadFeeds]);
+
   const handleSaveConfig = (url: string, key: string) => {
     const newConfig = { baseUrl: url, apiKey: key };
     localStorage.setItem('fluxpane-config', JSON.stringify(newConfig));
@@ -176,6 +195,23 @@ function App() {
       return newValue;
     });
   };
+
+  // Toggle individual entry read/unread status
+  const handleToggleEntryRead = async (entryId: number, currentStatus: 'read' | 'unread') => {
+    const newStatus = currentStatus === 'unread' ? 'read' : 'unread';
+    try {
+      await miniflux.updateEntries([entryId], newStatus);
+      // Update local state
+      setEntries(entries.map(e => 
+        e.id === entryId ? { ...e, status: newStatus } : e
+      ));
+      // Refresh counters to update sidebar
+      const counters = await miniflux.getFeedCounters();
+      setFeedCounters(counters);
+    } catch (err) {
+      console.error('Failed to toggle entry status:', err);
+    }
+  };
   const feedsByCategory = categories.map(cat => ({
     category: cat,
     feeds: feeds.filter(f => f.category.id === cat.id).map(f => ({
@@ -235,6 +271,7 @@ function App() {
         onMarkAllRead={handleMarkAllRead}
         showAllPosts={showAllPosts}
         onToggleShowAll={handleToggleShowAll}
+        onToggleEntryRead={handleToggleEntryRead}
       />
 
       <ArticleView

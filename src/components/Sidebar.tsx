@@ -47,6 +47,28 @@ export default function Sidebar({
   showUnreadOnly,
   onToggleUnreadOnly,
 }: Props) {
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem('fluxpane-collapsed-categories');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const toggleCategory = (categoryId: number) => {
+    setCollapsedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      localStorage.setItem('fluxpane-collapsed-categories', JSON.stringify([...next]));
+      return next;
+    });
+  };
+
   // Filter feeds based on showUnreadOnly setting
   const filteredCategories = showUnreadOnly
     ? categories
@@ -81,26 +103,35 @@ export default function Sidebar({
       </div>
 
       <div className="feed-categories scrollbar">
-        {filteredCategories.map(({ category, feeds }) => (
-          <div key={category.id} className="category">
-            <div className="category-title">{category.title}</div>
-            {feeds.map((feed) => (
+        {filteredCategories.map(({ category, feeds }) => {
+          const isCollapsed = collapsedCategories.has(category.id);
+          return (
+            <div key={category.id} className="category">
               <div
-                key={feed.id}
-                className={`feed-item ${selectedFeedId === feed.id ? 'active' : ''} ${unreadCounts[feed.id] > 0 ? 'unread' : ''}`}
-                onClick={() => onFeedSelect(feed.id, feed.title)}
+                className="category-title"
+                onClick={() => toggleCategory(category.id)}
               >
-                <span className="feed-icon-wrapper">
-                  <FeedIcon siteUrl={feed.site_url} title={feed.title} />
-                </span>
-                <span className="feed-name">{feed.title}</span>
-                <span className="feed-count">
-                  {unreadCounts[feed.id] > 0 ? unreadCounts[feed.id] : 0}
-                </span>
+                <span className="category-chevron">{isCollapsed ? '▶' : '▼'}</span>
+                {category.title}
               </div>
-            ))}
-          </div>
-        ))}
+              {!isCollapsed && feeds.map((feed) => (
+                <div
+                  key={feed.id}
+                  className={`feed-item ${selectedFeedId === feed.id ? 'active' : ''} ${unreadCounts[feed.id] > 0 ? 'unread' : ''}`}
+                  onClick={() => onFeedSelect(feed.id, feed.title)}
+                >
+                  <span className="feed-icon-wrapper">
+                    <FeedIcon siteUrl={feed.site_url} title={feed.title} />
+                  </span>
+                  <span className="feed-name">{feed.title}</span>
+                  <span className="feed-count">
+                    {unreadCounts[feed.id] > 0 ? unreadCounts[feed.id] : 0}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ padding: '15px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>

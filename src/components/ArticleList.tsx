@@ -1,3 +1,4 @@
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Entry } from '../types/miniflux';
 
 interface Props {
@@ -10,6 +11,14 @@ interface Props {
   onMarkAllRead: () => void;
   showAllPosts: boolean;
   onToggleShowAll: () => void;
+  onToggleEntryRead?: (entryId: number, currentStatus: 'read' | 'unread') => void;
+}
+
+interface ContextMenuState {
+  isOpen: boolean;
+  x: number;
+  y: number;
+  entry: Entry | null;
 }
 
 function formatDate(dateStr: string): string {
@@ -42,7 +51,62 @@ export default function ArticleList({
   onMarkAllRead,
   showAllPosts,
   onToggleShowAll,
+  onToggleEntryRead,
 }: Props) {
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    entry: null,
+  });
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu({ isOpen: false, x: 0, y: 0, entry: null });
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        closeContextMenu();
+      }
+    };
+
+    if (contextMenu.isOpen) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('wheel', closeContextMenu, { passive: true });
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('wheel', closeContextMenu);
+    };
+  }, [contextMenu.isOpen, closeContextMenu]);
+
+  const handleContextMenu = (e: React.MouseEvent, entry: Entry) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      isOpen: true,
+      x: e.clientX,
+      y: e.clientY,
+      entry,
+    });
+  };
+
+  const handleToggleRead = () => {
+    if (contextMenu.entry && onToggleEntryRead && contextMenu.entry.status !== 'removed') {
+      onToggleEntryRead(contextMenu.entry.id, contextMenu.entry.status as 'read' | 'unread');
+      closeContextMenu();
+    }
+  };
+
+  const handleOpenOriginal = () => {
+    if (contextMenu.entry?.url) {
+      window.open(contextMenu.entry.url, '_blank');
+      closeContextMenu();
+    }
+  };
   return (
     <main className="main-content">
       <div className="toolbar">
@@ -80,6 +144,7 @@ export default function ArticleList({
             key={entry.id}
             className={`article-card ${entry.status === 'read' ? 'read' : ''}`}
             onClick={() => onEntrySelect(entry)}
+            onContextMenu={(e) => handleContextMenu(e, entry)}
           >
             <div className="article-header">
               <span className="article-feed">{entry.feed.title}</span>
@@ -93,6 +158,21 @@ export default function ArticleList({
           </article>
         ))}
       </div>
+
+      {contextMenu.isOpen && (
+        <div
+          ref={menuRef}
+          className="context-menu"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+        >
+          <button className="context-menu-item" onClick={handleToggleRead}>
+            {contextMenu.entry?.status === 'unread' ? '✓ Mark as Read' : '🔴 Mark as Unread'}
+          </button>
+          <button className="context-menu-item" onClick={handleOpenOriginal}>
+            🔗 Open Original
+          </button>
+        </div>
+      )}
     </main>
   );
 }
