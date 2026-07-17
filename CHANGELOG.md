@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Read/unread filtering with multi-select status dropdown (Unread / Read / Starred / All) replacing the binary toggle
+- Author filter dropdown in filter bar with multi-select and per-author article counts
+- "Mark All Read" respects active author and status filters — marks only visible unread entries
+- Toggle read/unread button in article detail view header
+- Category-level article filtering — clicking a category name in the sidebar loads all articles from that category
+- Category unread counts shown as accent-colored badge next to category name in sidebar
+- Category name and collapse chevron are now separate controls — click name to filter, click chevron to collapse
+
+### Changed
+- Articles are marked read in-place on open and remain visible in the list (no longer removed from the unread list immediately)
+- Filter bar consolidated into a single row below the toolbar (status dropdown + author dropdown + Mark All Read)
+- Category headers in sidebar are now more visually prominent (bolder, uppercase, active highlight)
+- Feed unread count badges only shown when count > 0
+
+### Fixed
+- "Mark All Read" previously did nothing when viewing "All Unread" (no feed selected); now correctly marks all visible unread entries
+
 - Auto-refresh feed counters on window focus and every 5 minutes
 - Collapsible categories in sidebar with persisted collapse state
 - Catppuccin theme system with 4 flavors + system default

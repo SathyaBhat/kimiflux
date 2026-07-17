@@ -73,7 +73,7 @@ class MinifluxClient {
     }
   }
 
-  private async requestWithParams<T>(endpoint: string, params: Record<string, string | number | boolean>): Promise<T> {
+  private async requestWithParams<T>(endpoint: string, params: Record<string, string | number | boolean | undefined>): Promise<T> {
     const searchParams = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined) {
@@ -135,22 +135,21 @@ class MinifluxClient {
     order: string = 'published_at',
     direction: string = 'desc',
     limit: number = 100,
-    offset: number = 0
+    offset: number = 0,
+    starred?: boolean,
+    categoryId?: number
   ): Promise<EntriesResponse> {
-    const params: Record<string, string | number> = {
+    const params: Record<string, string | number | boolean | undefined> = {
       order,
       direction,
       limit,
       offset,
     };
 
-    if (status) {
-      params.status = status;
-    }
-
-    if (feedId) {
-      params.feed_id = feedId;
-    }
+    if (status) params.status = status;
+    if (feedId) params.feed_id = feedId;
+    if (starred !== undefined) params.starred = starred;
+    if (categoryId) params.category_id = categoryId;
 
     return this.requestWithParams('/entries', params);
   }

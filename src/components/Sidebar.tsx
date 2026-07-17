@@ -11,9 +11,11 @@ interface Props {
   unreadCounts: Record<number, number>;
   totalUnread: number;
   onFeedSelect: (feedId: number | null, feedTitle: string) => void;
+  onCategorySelect: (categoryId: number, categoryTitle: string) => void;
   onSettings: () => void;
   onThemeSettings?: () => void;
   selectedFeedId: number | null;
+  selectedCategoryId: number | null;
   showUnreadOnly: boolean;
   onToggleUnreadOnly: () => void;
 }
@@ -36,14 +38,16 @@ function FeedIcon({ siteUrl, title }: { siteUrl: string; title: string }) {
   return <span className="feed-favicon-fallback">{title.charAt(0).toUpperCase()}</span>;
 }
 
-export default function Sidebar({ 
-  categories, 
-  unreadCounts, 
+export default function Sidebar({
+  categories,
+  unreadCounts,
   totalUnread,
-  onFeedSelect, 
-  onSettings, 
+  onFeedSelect,
+  onCategorySelect,
+  onSettings,
   onThemeSettings,
   selectedFeedId,
+  selectedCategoryId,
   showUnreadOnly,
   onToggleUnreadOnly,
 }: Props) {
@@ -56,7 +60,8 @@ export default function Sidebar({
     }
   });
 
-  const toggleCategory = (categoryId: number) => {
+  const toggleCategory = (e: React.MouseEvent, categoryId: number) => {
+    e.stopPropagation();
     setCollapsedCategories(prev => {
       const next = new Set(prev);
       if (next.has(categoryId)) {
@@ -69,7 +74,6 @@ export default function Sidebar({
     });
   };
 
-  // Filter feeds based on showUnreadOnly setting
   const filteredCategories = showUnreadOnly
     ? categories
         .map(({ category, feeds }) => ({
@@ -83,17 +87,22 @@ export default function Sidebar({
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1>🗞️ FluxPane</h1>
-        <div className="feed-item active" onClick={() => onFeedSelect(null, 'All Unread')}>
+        <div
+          className={`feed-item ${selectedFeedId === null && selectedCategoryId === null ? 'active' : ''}`}
+          onClick={() => onFeedSelect(null, 'All Unread')}
+        >
           <span className="feed-icon">📥</span>
           <span className="feed-name">All Unread</span>
           {totalUnread > 0 && <span className="feed-count">{totalUnread}</span>}
         </div>
-        <div className="feed-item" onClick={() => onFeedSelect(-1, 'Starred')}>
+        <div
+          className={`feed-item ${selectedFeedId === -1 ? 'active' : ''}`}
+          onClick={() => onFeedSelect(-1, 'Starred')}
+        >
           <span className="feed-icon">⭐</span>
           <span className="feed-name">Starred</span>
         </div>
-        
-        {/* Unread Only Toggle */}
+
         <div className="sidebar-toggle" onClick={onToggleUnreadOnly}>
           <div className={`toggle-switch ${showUnreadOnly ? 'active' : ''}`}>
             <div className="toggle-thumb"></div>
@@ -105,15 +114,31 @@ export default function Sidebar({
       <div className="feed-categories scrollbar">
         {filteredCategories.map(({ category, feeds }) => {
           const isCollapsed = collapsedCategories.has(category.id);
+          const categoryUnread = feeds.reduce((sum, f) => sum + (unreadCounts[f.id] || 0), 0);
+          const isSelectedCategory = selectedCategoryId === category.id;
+
           return (
             <div key={category.id} className="category">
-              <div
-                className="category-title"
-                onClick={() => toggleCategory(category.id)}
-              >
-                <span className="category-chevron">{isCollapsed ? '▶' : '▼'}</span>
-                {category.title}
+              <div className={`category-header ${isSelectedCategory ? 'active' : ''}`}>
+                <button
+                  className="category-name-btn"
+                  onClick={() => onCategorySelect(category.id, category.title)}
+                  title={`Show all articles in ${category.title}`}
+                >
+                  {category.title}
+                  {categoryUnread > 0 && (
+                    <span className="category-unread-count">{categoryUnread}</span>
+                  )}
+                </button>
+                <button
+                  className="category-collapse-btn"
+                  onClick={(e) => toggleCategory(e, category.id)}
+                  title={isCollapsed ? 'Expand' : 'Collapse'}
+                >
+                  {isCollapsed ? '▶' : '▼'}
+                </button>
               </div>
+
               {!isCollapsed && feeds.map((feed) => (
                 <div
                   key={feed.id}
@@ -124,9 +149,9 @@ export default function Sidebar({
                     <FeedIcon siteUrl={feed.site_url} title={feed.title} />
                   </span>
                   <span className="feed-name">{feed.title}</span>
-                  <span className="feed-count">
-                    {unreadCounts[feed.id] > 0 ? unreadCounts[feed.id] : 0}
-                  </span>
+                  {unreadCounts[feed.id] > 0 && (
+                    <span className="feed-count">{unreadCounts[feed.id]}</span>
+                  )}
                 </div>
               ))}
             </div>

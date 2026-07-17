@@ -9,6 +9,8 @@ import Sidebar from './components/Sidebar';
 import ArticleList from './components/ArticleList';
 import ArticleView from './components/ArticleView';
 
+export type EntryFilter = 'unread' | 'read' | 'starred' | 'all';
+
 interface Config {
   baseUrl: string;
   apiKey: string;
@@ -24,6 +26,7 @@ function App() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [feedCounters, setFeedCounters] = useState<FeedCounters | null>(null);
   const [selectedFeedId, setSelectedFeedId] = useState<number | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(false);
   const [totalEntries, setTotalEntries] = useState(0);
@@ -31,7 +34,7 @@ function App() {
   const [showUnreadOnly, setShowUnreadOnly] = useState(() => {
     return localStorage.getItem('fluxpane-show-unread-only') === 'true';
   });
-  const [showAllPosts, setShowAllPosts] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState<EntryFilter[]>(['unread']);
 
   // Apply the theme colors to CSS variables on mount
   useEffect(() => {
@@ -80,12 +83,37 @@ function App() {
     }
   }, [feeds]);
 
-  // Load entries with optional status filter
-  const loadEntries = useCallback(async (feedId?: number, status?: 'read' | 'unread') => {
+  const loadEntries = useCallback(async (
+    feedId?: number,
+    statuses: EntryFilter[] = ['unread'],
+    categoryId?: number
+  ) => {
     if (!config) return;
     setLoading(true);
     try {
-      const data = await miniflux.getEntries(feedId || undefined, status || 'unread');
+      const isAll = statuses.includes('all') || statuses.length === 0;
+      const hasStarred = statuses.includes('starred');
+      const hasUnread = statuses.includes('unread');
+      const hasRead = statuses.includes('read');
+
+      let apiStatus: string | undefined;
+      let apiStarred: boolean | undefined;
+
+      if (!isAll && hasStarred && !hasUnread && !hasRead) {
+        apiStarred = true;
+      } else if (!isAll && hasUnread && !hasRead && !hasStarred) {
+        apiStatus = 'unread';
+      } else if (!isAll && hasRead && !hasUnread && !hasStarred) {
+        apiStatus = 'read';
+      }
+
+      const data = await miniflux.getEntries(
+        feedId || undefined,
+        apiStatus,
+        undefined, undefined, undefined, undefined,
+        apiStarred,
+        categoryId || undefined
+      );
       setEntries(data.entries);
       setTotalEntries(data.total);
     } catch (err) {
@@ -98,8 +126,7 @@ function App() {
   useEffect(() => {
     if (config) {
       loadFeeds();
-      // Initial load - show unread only by default
-      loadEntries(undefined, 'unread');
+      loadEntries(undefined, ['unread'], undefined);
     }
   }, [config, loadFeeds, loadEntries]);
 
@@ -132,23 +159,26 @@ function App() {
 
   const handleFeedSelect = (feedId: number | null, feedTitle: string) => {
     setSelectedFeedId(feedId);
+    setSelectedCategoryId(null);
     setActiveFeedTitle(feedTitle);
-    // Load entries based on showAllPosts toggle
-    const status = showAllPosts ? undefined : 'unread';
-    loadEntries(feedId || undefined, status);
+    loadEntries(feedId || undefined, selectedStatuses, undefined);
+  };
+
+  const handleCategorySelect = (categoryId: number, categoryTitle: string) => {
+    setSelectedCategoryId(categoryId);
+    setSelectedFeedId(null);
+    setActiveFeedTitle(categoryTitle);
+    loadEntries(undefined, selectedStatuses, categoryId);
   };
 
   const handleEntrySelect = async (entry: Entry) => {
     setSelectedEntry(entry);
-    // Mark as read if unread
     if (entry.status === 'unread') {
       try {
         await miniflux.updateEntries([entry.id], 'read');
-        // Update local state
-        setEntries(entries.map(e => 
-          e.id === entry.id ? { ...e, status: 'read' } : e
-        ));
-        // Refresh counters to update sidebar
+        // Update in-place — keep the entry visible in the list
+        setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'read' } : e));
+        setSelectedEntry(prev => prev?.id === entry.id ? { ...prev, status: 'read' } : prev);
         const counters = await miniflux.getFeedCounters();
         setFeedCounters(counters);
       } catch (err) {
@@ -158,17 +188,15 @@ function App() {
   };
 
   const handleRefresh = () => {
-    const status = showAllPosts ? undefined : 'unread';
     loadFeeds();
-    loadEntries(selectedFeedId || undefined, status);
+    loadEntries(selectedFeedId || undefined, selectedStatuses, selectedCategoryId || undefined);
   };
 
-  const handleMarkAllRead = async () => {
-    if (!selectedFeedId) return;
+  const handleMarkAllRead = async (entryIds: number[]) => {
+    if (entryIds.length === 0) return;
     try {
-      await miniflux.markFeedAsRead(selectedFeedId);
-      setEntries(entries.map(e => ({ ...e, status: 'read' })));
-      // Refresh counters to update sidebar
+      await miniflux.updateEntries(entryIds, 'read');
+      setEntries(prev => prev.map(e => entryIds.includes(e.id) ? { ...e, status: 'read' } : e));
       const counters = await miniflux.getFeedCounters();
       setFeedCounters(counters);
     } catch (err) {
@@ -176,7 +204,6 @@ function App() {
     }
   };
 
-  // Toggle to show unread feeds only in sidebar
   const handleToggleUnreadOnly = () => {
     setShowUnreadOnly(prev => {
       const newValue = !prev;
@@ -185,27 +212,21 @@ function App() {
     });
   };
 
-  // Toggle to show all posts vs unread only
-  const handleToggleShowAll = () => {
-    setShowAllPosts(prev => {
-      const newValue = !prev;
-      // Reload entries with new filter
-      const status = newValue ? undefined : 'unread';
-      loadEntries(selectedFeedId || undefined, status);
-      return newValue;
-    });
+  const handleStatusChange = (statuses: EntryFilter[]) => {
+    setSelectedStatuses(statuses);
+    loadEntries(selectedFeedId || undefined, statuses, selectedCategoryId || undefined);
   };
 
-  // Toggle individual entry read/unread status
   const handleToggleEntryRead = async (entryId: number, currentStatus: 'read' | 'unread') => {
     const newStatus = currentStatus === 'unread' ? 'read' : 'unread';
     try {
       await miniflux.updateEntries([entryId], newStatus);
-      // Update local state
-      setEntries(entries.map(e => 
+      setEntries(entries.map(e =>
         e.id === entryId ? { ...e, status: newStatus } : e
       ));
-      // Refresh counters to update sidebar
+      if (selectedEntry?.id === entryId) {
+        setSelectedEntry(prev => prev ? { ...prev, status: newStatus } : null);
+      }
       const counters = await miniflux.getFeedCounters();
       setFeedCounters(counters);
     } catch (err) {
@@ -254,9 +275,11 @@ function App() {
         unreadCounts={unreadCounts}
         totalUnread={totalUnread}
         onFeedSelect={handleFeedSelect}
+        onCategorySelect={handleCategorySelect}
         onSettings={() => setShowSettings(true)}
         onThemeSettings={() => setShowThemeSettings(true)}
         selectedFeedId={selectedFeedId}
+        selectedCategoryId={selectedCategoryId}
         showUnreadOnly={showUnreadOnly}
         onToggleUnreadOnly={handleToggleUnreadOnly}
       />
@@ -269,14 +292,15 @@ function App() {
         onEntrySelect={handleEntrySelect}
         onRefresh={handleRefresh}
         onMarkAllRead={handleMarkAllRead}
-        showAllPosts={showAllPosts}
-        onToggleShowAll={handleToggleShowAll}
+        selectedStatuses={selectedStatuses}
+        onStatusChange={handleStatusChange}
         onToggleEntryRead={handleToggleEntryRead}
       />
 
       <ArticleView
         entry={selectedEntry}
         onClose={() => setSelectedEntry(null)}
+        onToggleRead={handleToggleEntryRead}
       />
     </div>
   );

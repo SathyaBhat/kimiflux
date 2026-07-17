@@ -5,6 +5,7 @@ import { miniflux } from '../services/miniflux';
 interface Props {
   entry: Entry | null;
   onClose: () => void;
+  onToggleRead?: (entryId: number, currentStatus: 'read' | 'unread') => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -19,7 +20,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function ArticleView({ entry, onClose }: Props) {
+export default function ArticleView({ entry, onClose, onToggleRead }: Props) {
   const [loading, setLoading] = useState(false);
   const [fullContent, setFullContent] = useState<string | null>(null);
 
@@ -70,6 +71,15 @@ export default function ArticleView({ entry, onClose }: Props) {
           <button className="btn btn-secondary" onClick={handleToggleBookmark}>
             {entry.starred ? '⭐' : '☆'} Star
           </button>
+          {onToggleRead && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => onToggleRead(entry.id, entry.status as 'read' | 'unread')}
+              title={entry.status === 'unread' ? 'Mark as read' : 'Mark as unread'}
+            >
+              {entry.status === 'unread' ? '✉ Mark Read' : '✉ Mark Unread'}
+            </button>
+          )}
           <button className="btn btn-secondary" onClick={handleOpenOriginal}>
             🔗 Open
           </button>
