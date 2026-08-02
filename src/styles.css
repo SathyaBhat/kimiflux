@@ -830,7 +830,8 @@ body {
   font-size: 0.9rem;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 12px;
   border: 1px solid var(--border);

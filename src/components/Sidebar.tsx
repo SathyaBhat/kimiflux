@@ -14,6 +14,7 @@ interface Props {
   onCategorySelect: (categoryId: number, categoryTitle: string) => void;
   onSettings: () => void;
   onThemeSettings?: () => void;
+  onAddFeed: () => void;
   selectedFeedId: number | null;
   selectedCategoryId: number | null;
   showUnreadOnly: boolean;
@@ -46,6 +47,7 @@ export default function Sidebar({
   onCategorySelect,
   onSettings,
   onThemeSettings,
+  onAddFeed,
   selectedFeedId,
   selectedCategoryId,
   showUnreadOnly,
@@ -160,6 +162,9 @@ export default function Sidebar({
       </div>
 
       <div style={{ padding: '15px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <button className="btn btn-secondary" style={{ width: '100%' }} onClick={onAddFeed}>
+          ➕ Add Feed
+        </button>
         <button className="btn btn-secondary" style={{ width: '100%' }} onClick={onSettings}>
           ⚙️ Settings
         </button>

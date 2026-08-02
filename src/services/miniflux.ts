@@ -73,6 +73,37 @@ class MinifluxClient {
     }
   }
 
+  private async post<T>(endpoint: string, body?: Record<string, unknown>): Promise<T> {
+    if (isTauri()) {
+      const response = await tauriFetch(`${this._baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers: this._headers,
+        body: body ? Body.json(body) : undefined,
+        responseType: ResponseType.JSON,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return response.data as T;
+      } else {
+        const data = response.data as { error_message?: string } | undefined;
+        throw new Error(data?.error_message || `HTTP ${response.status}: ${response.data}`);
+      }
+    } else {
+      const response = await fetch(`${this._baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers: this._headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => undefined) as { error_message?: string } | undefined;
+        throw new Error(data?.error_message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response.json() as Promise<T>;
+    }
+  }
+
   private async requestWithParams<T>(endpoint: string, params: Record<string, string | number | boolean | undefined>): Promise<T> {
     const searchParams = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
@@ -127,6 +158,13 @@ class MinifluxClient {
 
   async getCategories(): Promise<Category[]> {
     return this.get('/categories');
+  }
+
+  async createFeed(feedUrl: string, categoryId?: number): Promise<{ feed_id: number }> {
+    return this.post('/feeds', {
+      feed_url: feedUrl,
+      ...(categoryId ? { category_id: categoryId } : {}),
+    });
   }
 
   async getEntries(

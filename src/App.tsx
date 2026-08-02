@@ -5,6 +5,7 @@ import { faviconService } from './services/favicon';
 import { useTheme } from './hooks/useTheme';
 import { ThemeSettingsInline } from './components/ThemeSettings';
 import SettingsModal from './components/SettingsModal';
+import AddFeedModal from './components/AddFeedModal';
 import Sidebar from './components/Sidebar';
 import ArticleList from './components/ArticleList';
 import ArticleView from './components/ArticleView';
@@ -21,6 +22,7 @@ function App() {
   const [config, setConfig] = useState<Config | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showThemeSettings, setShowThemeSettings] = useState(false);
+  const [showAddFeed, setShowAddFeed] = useState(false);
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -260,6 +262,14 @@ function App() {
         />
       )}
 
+      {showAddFeed && (
+        <AddFeedModal
+          categories={categories}
+          onClose={() => setShowAddFeed(false)}
+          onAdded={loadFeeds}
+        />
+      )}
+
       {showThemeSettings && (
         <div className="modal-overlay" onClick={(e) => {
           if (e.target === e.currentTarget) setShowThemeSettings(false);
@@ -278,6 +288,7 @@ function App() {
         onCategorySelect={handleCategorySelect}
         onSettings={() => setShowSettings(true)}
         onThemeSettings={() => setShowThemeSettings(true)}
+        onAddFeed={() => setShowAddFeed(true)}
         selectedFeedId={selectedFeedId}
         selectedCategoryId={selectedCategoryId}
         showUnreadOnly={showUnreadOnly}
